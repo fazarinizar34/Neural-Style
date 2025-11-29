@@ -1,4 +1,9 @@
 # Neural-Style
+# Nama         :  Nizar Fazari Hidayat
+# NIM          : 41236824
+# Kelas        : TI-2023-REG-P1
+# Mata Kuliah  : Deep Learning Lanjut
+
 # 🧠 Neural Style Transfer (NST) — Peacemaker × Starry Night
 
 Proyek ini merupakan implementasi **Neural Style Transfer (NST)** untuk menggabungkan konten dari gambar tokoh Peacemaker dengan gaya visual dari lukisan legendaris **Starry Night** karya Vincent van Gogh. Repositori ini berisi notebook, gambar input, dan output hasil style transfer.
@@ -83,9 +88,11 @@ Notebook menghasilkan:
 
 ### **Input & Output**
 
-| Content             | Style                  | Output                     |
-| ------------------- | ---------------------- | -------------------------- |
-| ![](Peacemaker.jpg) | ![](neural style.jfif) | ![](Peacemaker_Styled.png) |
+### **Output**
+
+| Hasil Style Transfer       |
+| -------------------------- |
+| ![](Peacemaker_Styled.png) |
 
 ---
 
@@ -112,10 +119,5 @@ Notebook menghasilkan:
 ## 📝 Catatan
 
 Proyek ini dibuat untuk keperluan pembelajaran dalam memahami konsep Neural Style Transfer dan eksperimen pengolahan citra menggunakan Deep Learning.
-
 ---
-
-## 📬 Kontak
-
-Jika Anda membutuhkan penjelasan tambahan atau ingin menambah fitur pada proyek ini, silakan hubungi melalui repository issue atau email terkait.
 
