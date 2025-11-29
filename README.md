@@ -1,13 +1,11 @@
 # Neural-Style
-🎨 Tugas Generative Deep Learning: Neural Style Transfer (NST)
+🎨 Neural Style Transfer (NST) dengan VGG19 dan TensorFlow
 
-Proyek ini adalah implementasi dari teknik Neural Style Transfer (NST) menggunakan TensorFlow 2 dan Keras pada Google Colab. NST memungkinkan penggabungan konten struktural dari satu gambar dengan gaya artistik (tekstur, warna, goresan kuas) dari gambar lain.
+Proyek ini adalah implementasi dari Neural Style Transfer (NST) menggunakan arsitektur Convolutional Neural Network (CNN) VGG19 yang dimuat melalui TensorFlow dan Keras. NST bertujuan untuk menggabungkan konten dari satu gambar dengan gaya artistik dari gambar lain.
 
-File Utama: Neural_Style_Transfer_Colab.ipynb
+🚀 Demonstrasi Hasil
 
-🖼️ Demonstrasi Hasil
-
-Berikut adalah contoh visual dari proses Style Transfer, menggunakan gambar input yang Anda sediakan:
+Berikut adalah contoh visual dari proses Style Transfer yang dihasilkan oleh model ini, menggabungkan konten dari Peacemaker.jpg dengan gaya dari neural style.jfif.
 
 Gambar Konten (Content)
 
@@ -15,73 +13,85 @@ Gambar Gaya (Style)
 
 Gambar Hasil (Output)
 
-Peacemaker.jpg
-
-neural style.jfif
-
-Peacemaker_Styled.png
 
 
 
 
+🧠 Analisis dan Penjelasan Kode
 
-🧠 Penjelasan Kode Inti (.ipynb)
+Kode utama proyek ini, yang terdapat dalam Neural_Style_Transfer_Colab.ipynb, berfokus pada teknik optimasi untuk meminimalkan fungsi kerugian komposit, yang merupakan kunci keberhasilan proses Style Transfer.
 
-Kode ini bekerja dengan prinsip optimasi untuk meminimalkan fungsi kerugian (Loss Function) komposit.
+1. Model Feature Extractor (VGG19)
 
-1. Model VGG19 sebagai Feature Extractor
+Tujuan: Menggunakan VGG19 (pre-trained di ImageNet) untuk mengekstrak representasi hirarkis dari gambar. Lapisan yang berbeda menangkap informasi yang berbeda:
 
-Kami menggunakan arsitektur VGG19 yang telah dilatih (pre-trained) pada dataset ImageNet. Model ini berfungsi sebagai "mata" yang mampu membedakan:
+Lapisan Dalam (Deep Layers): Menangkap Konten (bentuk objek, struktur).
 
-Fitur Konten: Apa yang ada di gambar (objek, bentuk). Diekstrak dari lapisan yang lebih dalam (CONTENT_LAYERS = ['block5_conv2']).
+Lapisan Dangkal (Shallow Layers): Menangkap Gaya (tekstur, warna, pola).
 
-Fitur Gaya: Bagaimana gambar itu dilukis (tekstur, warna). Diekstrak dari lapisan-lapisan yang berbeda kedalaman (STYLE_LAYERS = ['block1_conv1', ... 'block5_conv1']).
+Implementasi: Model StyleContentModel dibuat dari VGG19, mengembalikan output dari lapisan yang telah ditentukan untuk Style dan Content.
 
 2. Fungsi Kerugian (Loss Function)
 
-Inti dari NST adalah Total Loss, yang merupakan kombinasi berbobot dari dua komponen kerugian:
+Proses optimasi bertujuan meminimalkan Total Loss ($\text{Loss}_{\text{Total}}$):
 
 $$\text{Loss}_{\text{Total}} = \alpha \times \text{Loss}_{\text{Content}} + \beta \times \text{Loss}_{\text{Style}}$$
 
-a. Content Loss
+a. Content Loss ($\text{Loss}_{\text{Content}}$)
 
-Tujuan: Memastikan struktur objek di gambar hasil tetap mirip dengan gambar konten.
+Lapisan yang Dipilih: CONTENT_LAYERS = ['block5_conv2']
 
-Perhitungan: Menggunakan Mean Squared Error (MSE) antara fitur lapisan dalam gambar hasil dan gambar konten target. Bobotnya diatur oleh $\alpha$ (ALPHA = 1e3).
+Fungsi: Menghitung Mean Squared Error (MSE) antara aktivasi fitur dari gambar hasil dan gambar konten target. Ini memastikan bahwa struktur objek utama gambar output dipertahankan.
 
-b. Style Loss
+b. Style Loss ($\text{Loss}_{\text{Style}}$)
 
-Tujuan: Memastikan tekstur, palet warna, dan pola gambar hasil mengikuti gambar gaya.
+Lapisan yang Dipilih: STYLE_LAYERS dari block1_conv1 hingga block5_conv1.
 
-Perhitungan: Menggunakan Mean Squared Error (MSE) antara Gram Matrix dari gambar hasil dan Gram Matrix dari gambar gaya target.
+Perhitungan: Menggunakan MSE antara Gram Matrix dari gambar hasil dan Gram Matrix dari gambar gaya target.
 
-Gram Matrix: Matriks ini dihitung dari aktivasi fitur dan secara efektif menangkap korelasi statistik antara berbagai fitur, yang merepresentasikan "gaya" atau tekstur.
+Gram Matrix: Matriks Gram ($G$) dihitung sebagai perkalian matriks dari fitur vektor ($F$) dengan transposenya ($F^T$). Ini secara efektif menangkap korelasi spasial antar saluran fitur, yang merepresentasikan tekstur dan gaya secara abstrak, terlepas dari lokasi spasialnya.
 
-Bobotnya diatur oleh $\beta$ (BETA = 1e6), yang jauh lebih tinggi untuk menekankan transfer gaya secara dominan.
+$G_{ij} = \sum_k F_{ik} F_{jk}$
 
-3. Proses Optimasi
+Normalisasi: Loss gaya dibagi dengan jumlah lapisan gaya untuk normalisasi.
 
-Gambar Output: Proses dimulai dengan menginisialisasi gambar output sebagai salinan dari gambar konten.
+3. Optimasi (Gradient Descent)
 
-Optimizer: Menggunakan Adam Optimizer (walaupun paper asli menggunakan L-BFGS, Adam lebih mudah diimplementasikan dan efisien di TensorFlow) untuk secara iteratif menyesuaikan nilai piksel pada gambar output.
+Inisialisasi: Gambar yang akan dioptimasi (image_to_optimize) diinisialisasi sebagai salinan gambar konten.
 
-train_step: Setiap langkah optimasi menghitung gradien dari Total Loss terhadap piksel gambar output dan kemudian menerapkan gradien tersebut untuk memodifikasi gambar, sehingga Total Loss terus berkurang hingga gaya dan konten tercapai.
+Optimizer: Menggunakan tf.optimizers.Adam dengan learning rate 0.02.
 
-⚙️ Petunjuk Eksekusi dan Konfigurasi
+@tf.function(): Fungsi train_step di-dekorasi dengan @tf.function untuk kompilasi graph TensorFlow, yang meningkatkan kecepatan eksekusi.
 
-1. Prasyarat
+Langkah Pelatihan: Pada setiap langkah, Gradient Tape menghitung gradien dari Total Loss terhadap piksel gambar output. Gradien ini kemudian diterapkan oleh Adam Optimizer untuk memodifikasi piksel gambar output.
 
-Akselerator GPU: Wajib diaktifkan di Colab.
+⚙️ Petunjuk Eksekusi
 
-Jalur Gambar: Pastikan gambar Anda berada di jalur berikut di Google Drive:
+Proyek ini paling mudah dijalankan menggunakan Google Colab.
 
-/content/drive/MyDrive/Colab Notebooks/Deep Learning/Peacemaker.jpg
-/content/drive/MyDrive/Colab Notebooks/Deep Learning/neural style.jfif
+Prasyarat
 
+Akselerator GPU: Aktifkan GPU pada Notebook Colab Anda.
 
-2. Hyperparameters
+File Gambar: Pastikan gambar input Anda tersimpan di Google Drive dengan jalur yang sesuai:
 
-Anda dapat menyesuaikan nilai ini di sel 2.1 Variabel Konfigurasi dalam Notebook:
+Konten: /content/drive/MyDrive/Colab Notebooks/Deep Learning/Peacemaker.jpg
+
+Gaya: /content/drive/MyDrive/Colab Notebooks/Deep Learning/neural style.jfif
+
+Langkah Eksekusi
+
+Buka Neural_Style_Transfer_Colab.ipynb di Google Colab.
+
+Jalankan sel Mount Google Drive untuk menghubungkan Drive Anda.
+
+Jalankan semua sel secara berurutan.
+
+Gambar hasil akhir akan disimpan di: /content/drive/MyDrive/Colab Notebooks/Deep Learning/Peacemaker_Styled.png.
+
+Konfigurasi Hyperparameters
+
+Nilai-nilai ini menentukan hasil akhir. Anda dapat bereksperimen dengan mengubah rasio $\alpha/\beta$.
 
 Variabel
 
@@ -91,13 +101,13 @@ Nilai Default
 
 ALPHA
 
-Bobot Content Loss
+Bobot untuk Content Loss ($\alpha$)
 
 1e3
 
 BETA
 
-Bobot Style Loss
+Bobot untuk Style Loss ($\beta$)
 
 1e6
 
@@ -109,11 +119,6 @@ Jumlah Epoch Optimasi
 
 STEPS_PER_EPOCH
 
-Jumlah langkah per Epoch
+Jumlah langkah gradient descent per Epoch
 
 100
-
-3. Simpan Hasil
-
-Setelah proses selesai, gambar hasil akan disimpan secara otomatis ke jalur berikut di Drive Anda:
-/content/drive/MyDrive/Colab Notebooks/Deep Learning/Peacemaker_Styled.png
